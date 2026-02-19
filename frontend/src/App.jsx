@@ -1,10 +1,15 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+
 import './App.css'
+import DashboardPage from './dashboard/DashboardPage';
+
+
+// NOTA: MIGRANDO DESDE CODIGO LEGACY A REACT
 
 function App() {
   const [count, setCount] = useState(0)
+
+  
 
 
         const CATEGORIAS = ['Oficiales', 'Cadetes', 'Aspirantes', 'Reclutas'];
@@ -21,7 +26,9 @@ function App() {
             observaciones: {}, // "NOMBRE": "texto"
             historicos: [] // Array de { id: 'Mes 2/26', fechaCierre: '...', html: '...' }
         };
+    const [data, setData] = useState(appData);
 
+    
         let currentProfileName = "";
         let currentViewingReport = null;
 
@@ -130,36 +137,7 @@ function App() {
             const currentDate = document.getElementById('dateSelector').value;
             const currentData = appData.asistencias[currentDate] || {};
 
-            CATEGORIAS.forEach(cat => {
-                if (appData.miembros[cat].length === 0) return;
-                let section = `<div style="margin-bottom: 25px;">
-                <h4 style="background: #333; padding: 5px 10px; border-left: 4px solid var(--accent-color);">${cat}</h4>`;
-
-                appData.miembros[cat].forEach(m => {
-                    const entry = currentData[m] || { estado: '', comentario: '' };
-                    section += `
-                <div class="attendance-row">
-                    <div class="attendance-main">
-                        <div class="member-name">${m}</div>
-                        <div class="attendance-options">
-                            <label class="option-label" style="color: var(--success-color);">
-                                <input type="radio" name="att_${m}" value="P" ${entry.estado === 'P' ? 'checked' : ''} onchange="toggleComment('${m}')"> P
-                            </label>
-                            <label class="option-label" style="color: var(--danger-color);">
-                                <input type="radio" name="att_${m}" value="A" ${entry.estado === 'A' ? 'checked' : ''} onchange="toggleComment('${m}')"> A
-                            </label>
-                            <label class="option-label" style="color: var(--warning-color);">
-                                <input type="radio" name="att_${m}" value="J" ${entry.estado === 'J' ? 'checked' : ''} onchange="toggleComment('${m}')"> Aviso
-                            </label>
-                        </div>
-                    </div>
-                    <div id="comment_box_${m}" class="comment-box ${entry.estado === 'J' ? 'visible' : ''}">
-                        <textarea id="comment_input_${m}" placeholder="Escribe el motivo del aviso...">${entry.comentario || ''}</textarea>
-                    </div>
-                </div>`;
-                });
-                container.innerHTML += section + `</div>`;
-            });
+            // quite algo
         }
 
         function toggleComment(name) {
@@ -405,159 +383,13 @@ function App() {
         <img src="d1.png" alt="Logo Unidad" className="header-logo" />
     </header>
 
-    <div className="tabs">
-        <button className="tab-btn active" onClick={() => openTab('registro')}>Registro Diario</button>
-        <button className="tab-btn" onClick={() => openTab('estadisticas')}>Estadísticas</button>
-        <button className="tab-btn" onClick={() => openTab('meses')}>Meses</button>
-        <button className="tab-btn" onClick={() => openTab('miembros')}>Gestionar Miembros</button>
-    </div>
+    <DashboardPage />
 
-    {/* TAB: REGISTRO DIARIO */}
-    <div id="registro" className="tab-content active">
-        <div className="section-card">
-            <div className="date-container">
-                <label>📅 FECHA DE ENTRENAMIENTO:</label>
-                <input
-                    type="date"
-                    id="dateSelector"
-                    onChange={loadAttendanceForDate}
-                    style={{ maxWidth: "250px" }}
-                />
-            </div>
 
-            <div id="attendanceFormsContainer">
-                {/* Se llenará dinámicamente */}
-            </div>
-
-            <div style={{ marginTop: "20px", textAlign: "right" }}>
-                <button className="btn-primary" onClick={saveAttendance}>
-                    Guardar Registro del Día
-                </button>
-            </div>
-        </div>
-    </div>
-
-    {/* TAB: ESTADÍSTICAS */}
-    <div id="estadisticas" className="tab-content">
-        <div className="section-card">
-            <h3>📊 Resumen de Rendimiento</h3>
-            <p style={{ fontSize: "0.8em", color: "#888", marginBottom: "20px" }}>
-                * Haz clic en el nombre de un integrante para ver su historial y observaciones.
-            </p>
-            <div id="statsContainer">
-                {/* Tablas generadas con JS */}
-            </div>
-        </div>
-    </div>
-
-    {/* TAB: MESES */}
-    <div id="meses" className="tab-content">
-        <div className="section-card">
-            <h3>📂 Historial de Cierres Mensuales</h3>
-            <p style={{ fontSize: "0.8em", color: "#888", marginBottom: "20px" }}>
-                Aquí se guardan los reportes de cada mes cerrado.
-            </p>
-            <div id="monthlyReportsContainer">
-                {/* Listado de reportes */}
-            </div>
-        </div>
-    </div>
-
-    {/* TAB: GESTIÓN DE MIEMBROS */}
-    <div id="miembros" className="tab-content">
-        <div className="section-card">
-            <h3>👥 Personal de la Unidad</h3>
-            <div id="memberManagementContainer">
-                {/* Se llenará dinámicamente */}
-            </div>
-        </div>
-    </div>
-
-    <div className="footer-controls">
-        <button className="btn-secondary" onClick={exportData}>⬇️ Backup Total</button>
-        <button
-            className="btn-secondary"
-            onClick={() => document.getElementById('importFile').click()}
-        >
-            ⬆️ Importar Backup
-        </button>
-        <input
-            type="file"
-            id="importFile"
-            style={{ display: "none" }}
-            onChange={(e) => importData(e.target)}
-            accept=".json"
-        />
-        <button className="btn-danger" id="btnCloseMonth" onClick={closeMonth}>
-            🔒 Cerrar Mes
-        </button>
-    </div>
-
-    <button className="btn-reset" onClick={resetApp}>resetear</button>
-
-    {/* Toast */}
-    <div id="toast">¡Datos guardados correctamente!</div>
-
-    {/* MODAL DE PERFIL */}
-    <div id="profileModal" className="modal">
-        <div className="modal-content">
-            <span className="close-modal" onClick={closeModal}>&times;</span>
-            <h2 id="modalName" style={{ marginBottom: "5px" }}>Nombre</h2>
-            <p
-                id="modalCategory"
-                style={{
-                    color: "#888",
-                    marginBottom: "20px",
-                    textTransform: "uppercase",
-                    fontSize: "0.8em"
-                }}
-            >
-                Categoría
-            </p>
-
-            <div style={{ marginBottom: "25px" }}>
-                <h4 style={{ color: "var(--accent-color)" }}>📝 Observaciones del Integrante</h4>
-                <textarea
-                    id="modalObservations"
-                    rows="3"
-                    placeholder="Anotaciones sobre comportamiento, ascensos, méritos..."
-                />
-                <div style={{ textAlign: "right", marginTop: "5px" }}>
-                    <button
-                        className="btn-primary"
-                        style={{ fontSize: "0.8em" }}
-                        onClick={saveObservationFromModal}
-                    >
-                        Guardar Observación
-                    </button>
-                </div>
-            </div>
-
-            <div>
-                <h4 style={{ color: "var(--accent-color)" }}>📜 Historial de Comentarios</h4>
-                <div id="modalHistory">
-                    {/* Historial */}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {/* MODAL DE REPORTE MENSUAL */}
-    <div id="reportModal" className="modal">
-        <div className="modal-content" style={{ width: "90%", maxWidth: "1000px" }}>
-            <span className="close-modal" onClick={closeReportModal}>&times;</span>
-            <h2 id="reportModalTitle">Reporte Mensual</h2>
-            <div id="reportModalContent">
-                {/* Contenido del reporte */}
-            </div>
-            <div style={{ textAlign: "center", marginTop: "30px" }}>
-                <button className="btn-primary" onClick={downloadCurrentReportHtml}>
-                    📥 Descargar HTML de este Mes
-                </button>
-            </div>
-        </div>
-    </div>
+    
 </div>
+
+
     </>
   )
 }
