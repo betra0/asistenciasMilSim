@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Asistencia - V.Comodoro Eban</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --accent-color: #d4af37;
+            /* Dorado */
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f1c40f;
+            --border-radius: 8px;
+            --table-col-width: 120px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 20px;
+            position: relative;
+        }
+
+        .header-logo {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 80px;
+            width: auto;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            margin: 0;
+            font-size: 2.5em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #444;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: #888;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-color);
+        }
+
+        .tab-btn.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Cards & Sections */
+        .section-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        h2,
+        h3 {
+            color: var(--accent-color);
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        /* Member List */
+        .member-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .member-item {
+            background: #363636;
+            padding: 10px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .btn-delete {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+
+        .btn-delete:hover {
+            color: var(--danger-color);
+        }
+
+        /* Forms */
+        .add-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        textarea {
+            background: #363636;
+            border: 1px solid #444;
+            color: var(--text-color);
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        input[type="text"],
+        input[type="date"] {
+            flex-grow: 1;
+        }
+
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            resize: vertical;
+            margin-top: 5px;
+        }
+
+        button.btn-primary {
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        button.btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        /* Center date selector */
+        .date-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .date-container label {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        /* Attendance List */
+        .attendance-row {
+            display: flex;
+            flex-direction: column;
+            padding: 15px 10px;
+            border-bottom: 1px solid #444;
+        }
+
+        .attendance-main {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .member-name {
+            flex-grow: 1;
+            font-weight: 500;
+        }
+
+        .attendance-options {
+            display: flex;
+            gap: 15px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .comment-box {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .comment-box.visible {
+            display: block;
+        }
+
+        /* Stats Table with alignment */
+        table.stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            table-layout: fixed;
+        }
+
+        th,
+        td {
+            text-align: center;
+            padding: 12px;
+            border-bottom: 1px solid #444;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        th:first-child,
+        td:first-child {
+            text-align: left;
+            width: auto;
+            /* El nombre toma el espacio restante */
+        }
+
+        td:not(:first-child),
+        th:not(:first-child) {
+            width: var(--table-col-width);
+        }
+
+        th {
+            color: var(--accent-color);
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .clickable-name {
+            cursor: pointer;
+            text-decoration: underline;
+            text-decoration-color: transparent;
+            transition: text-decoration-color 0.2s;
+        }
+
+        .clickable-name:hover {
+            text-decoration-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            margin: 5% auto;
+            padding: 25px;
+            border: 1px solid var(--accent-color);
+            border-radius: var(--border-radius);
+            width: 70%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #888;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: white;
+        }
+
+        .history-item {
+            background: #333;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .history-date {
+            color: var(--accent-color);
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .history-status {
+            margin-right: 10px;
+        }
+
+        .history-comment {
+            font-style: italic;
+            color: #aaa;
+        }
+
+        /* Report Item Styling */
+        .report-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #333;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border-left: 5px solid var(--accent-color);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .report-item:hover {
+            background: #444;
+        }
+
+        .report-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .report-title {
+            font-weight: bold;
+            color: var(--accent-color);
+            font-size: 1.1em;
+        }
+
+        .report-date {
+            font-size: 0.8em;
+            color: #888;
+        }
+
+        /* Utility */
+        .footer-controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            border-top: 1px solid #444;
+            padding-top: 20px;
+        }
+
+        .btn-secondary {
+            background-color: #444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-secondary:hover {
+            background-color: #555;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-danger:hover {
+            opacity: 0.8;
+        }
+
+        /* Reset Button */
+        .btn-reset {
+            position: fixed;
+            bottom: 5px;
+            left: 10px;
+            font-size: 10px;
+            color: #555;
+            text-decoration: none;
+            cursor: pointer;
+            z-index: 1001;
+            opacity: 0.6;
+            transition: all 0.2s;
+            border: none;
+            background: none;
+            padding: 2px;
+            font-family: inherit;
+        }
+
+        .btn-reset:hover {
+            opacity: 1;
+            color: var(--danger-color);
+        }
+
+        /* Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: var(--success-color);
+            color: #000;
+            text-align: center;
+            border-radius: 4px;
+            padding: 16px;
+            position: fixed;
+            z-index: 2000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @keyframes fadein {
+            from {
+                bottom: 0;
+                opacity: 0;
+            }
+
+            to {
+                bottom: 30px;
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeout {
+            from {
+                bottom: 30px;
+                opacity: 1;
+            }
+
+            to {
+                bottom: 0;
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Control de Asistencias</h1>
+            <p style="color: #888;">Gestión de Personal - V.Comodoro Eban</p>
+            <img src="d1.png" alt="Logo Unidad" class="header-logo">
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab('registro')">Registro Diario</button>
+            <button class="tab-btn" onclick="openTab('estadisticas')">Estadísticas</button>
+            <button class="tab-btn" onclick="openTab('meses')">Meses</button>
+            <button class="tab-btn" onclick="openTab('miembros')">Gestionar Miembros</button>
+        </div>
+
+        <!-- TAB: REGISTRO DIARIO -->
+        <div id="registro" class="tab-content active">
+            <div class="section-card">
+                <div class="date-container">
+                    <label>📅 FECHA DE ENTRENAMIENTO:</label>
+                    <input type="date" id="dateSelector" onchange="loadAttendanceForDate()" style="max-width: 250px;">
+                </div>
+
+                <div id="attendanceFormsContainer">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+
+                <div style="margin-top: 20px; text-align: right;">
+                    <button class="btn-primary" onclick="saveAttendance()">Guardar Registro del Día</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: ESTADÍSTICAS -->
+        <div id="estadisticas" class="tab-content">
+            <div class="section-card">
+                <h3>📊 Resumen de Rendimiento</h3>
+                <p style="font-size: 0.8em; color: #888; margin-bottom: 20px;">* Haz clic en el nombre de un integrante
+                    para ver su historial y observaciones.</p>
+                <div id="statsContainer">
+                    <!-- Tablas generadas con JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: MESES -->
+        <div id="meses" class="tab-content">
+            <div class="section-card">
+                <h3>📂 Historial de Cierres Mensuales</h3>
+                <p style="font-size: 0.8em; color: #888; margin-bottom: 20px;">Aquí se guardan los reportes de cada mes
+                    cerrado.</p>
+                <div id="monthlyReportsContainer">
+                    <!-- Listado de reportes -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: GESTIÓN DE MIEMBROS -->
+        <div id="miembros" class="tab-content">
+            <div class="section-card">
+                <h3>👥 Personal de la Unidad</h3>
+                <div id="memberManagementContainer">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-controls">
+            <button class="btn-secondary" onclick="exportData()">⬇️ Backup Total</button>
+            <button class="btn-secondary" onclick="document.getElementById('importFile').click()">⬆️ Importar
+                Backup</button>
+            <input type="file" id="importFile" style="display: none;" onchange="importData(this)" accept=".json">
+            <button class="btn-danger" id="btnCloseMonth" onclick="closeMonth()">🔒 Cerrar Mes</button>
+        </div>
+
+        <button class="btn-reset" onclick="resetApp()">resetear</button>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast">¡Datos guardados correctamente!</div>
+
+    <!-- MODAL DE PERFIL -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 id="modalName" style="margin-bottom: 5px;">Nombre</h2>
+            <p id="modalCategory"
+                style="color: #888; margin-bottom: 20px; text-transform: uppercase; font-size: 0.8em;">Categoría</p>
+
+            <div style="margin-bottom: 25px;">
+                <h4 style="color: var(--accent-color);">📝 Observaciones del Integrante</h4>
+                <textarea id="modalObservations" rows="3"
+                    placeholder="Anotaciones sobre comportamiento, ascensos, méritos..."></textarea>
+                <div style="text-align: right; margin-top: 5px;">
+                    <button class="btn-primary" style="font-size: 0.8em;" onclick="saveObservationFromModal()">Guardar
+                        Observación</button>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="color: var(--accent-color);">📜 Historial de Comentarios</h4>
+                <div id="modalHistory">
+                    <!-- Historial -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE REPORTE MENSUAL -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content" style="width: 90%; max-width: 1000px;">
+            <span class="close-modal" onclick="closeReportModal()">&times;</span>
+            <h2 id="reportModalTitle">Reporte Mensual</h2>
+            <div id="reportModalContent">
+                <!-- Contenido del reporte -->
+            </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn-primary" onclick="downloadCurrentReportHtml()">📥 Descargar HTML de este Mes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CATEGORIAS = ['Oficiales', 'Cadetes', 'Aspirantes', 'Reclutas'];
+        const DEFAULT_MEMBERS = {
+            'Oficiales': ['[GRL.D] Pegaso', '[V. Comodoro] Eban', '[T.Coronel] Lucho', '[MY] Venom', '[MY] Gonxol'],
+            'Cadetes': ['[CDTE] Gestgu', '[CDTE] Pepos', '[CDTE] Necros', '[CDTE] Daniel'],
+            'Aspirantes': ['[ASP] Butin', '[ASP] Carcho', '[ASP] Fredy', '[ASP] Panamasado', '[ASP] Calaca', '[ASP] Elbno', '[ASP] Carrera', '[ASP] Caracol', '[ASP] Ncu', '[ASP] Mitzio', '[ASP] Sonidero', '[ASP] Hunter', '[ASP] Marucha', '[ASP] Miyamas', '[ASP] Tengu', '[ASP] HardB'],
+            'Reclutas': ['[RCT] Abaddon', '[RCT] Angel "Artemiza"', '[RCT] Cerec', '[RCT] Daniel Villalba', '[RCT] Di Campino', '[RCT] Esteban', '[RCT] GuilletreX', '[RCT] Hunter', '[RCT] Janovich', '[RCT] JBMatias', '[RCT] NCU', '[RCT] NejiiDark', '[RCT] Parasyte', '[RCT] Relan', '[RCT] Samurai', '[RCT] strack3322', '[RCT] Tear', '[RCT] Uriel.R', '[RCT] ASUS', '[RCT] Boloncho', '[RCT] Facun', '[RCT] GuardiaN', '[RCT] Tafu', '[RCT] TomiCheddar', '[RCT] sscug']
+        };
+
+        let appData = {
+            miembros: JSON.parse(JSON.stringify(DEFAULT_MEMBERS)),
+            asistencias: {}, // "FECHA": { "NOMBRE": { estado: 'P', comentario: '' } }
+            observaciones: {}, // "NOMBRE": "texto"
+            historicos: [] // Array de { id: 'Mes 2/26', fechaCierre: '...', html: '...' }
+        };
+
+        let currentProfileName = "";
+        let currentViewingReport = null;
+
+        window.onload = function () {
+            loadData();
+            document.getElementById('dateSelector').valueAsDate = new Date();
+            renderAll();
+        };
+
+        function loadData() {
+            let savedData = localStorage.getItem('asistencias_eban_v2');
+
+            if (!savedData) {
+                const oldData = localStorage.getItem('asistencias_eban_v1');
+                if (oldData) {
+                    const parsedOld = JSON.parse(oldData);
+                    appData.miembros = parsedOld.miembros || appData.miembros;
+                    for (let date in parsedOld.asistencias) {
+                        appData.asistencias[date] = {};
+                        for (let member in parsedOld.asistencias[date]) {
+                            const val = parsedOld.asistencias[date][member];
+                            if (typeof val === 'string') appData.asistencias[date][member] = { estado: val, comentario: "" };
+                            else appData.asistencias[date][member] = val;
+                        }
+                    }
+                    saveData();
+                }
+            } else {
+                appData = JSON.parse(savedData);
+                if (!appData.observaciones) appData.observaciones = {};
+                if (!appData.historicos) appData.historicos = [];
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('asistencias_eban_v2', JSON.stringify(appData));
+        }
+
+        function openTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+            const targetContent = document.getElementById(tabName);
+            if (targetContent) targetContent.classList.add('active');
+
+            const buttons = document.getElementsByClassName('tab-btn');
+            for (let btn of buttons) {
+                const btnText = btn.innerText.toLowerCase();
+                if (btnText.includes(tabName.substring(0, 4)) || (tabName === 'meses' && btnText.includes('meses'))) {
+                    btn.classList.add('active');
+                }
+            }
+        }
+
+        function renderAll() {
+            renderMemberManagement();
+            renderAttendanceForms();
+            renderStats();
+            renderMonthlyReports();
+        }
+
+        // --- MIEMBROS ---
+        function renderMemberManagement() {
+            const container = document.getElementById('memberManagementContainer');
+            container.innerHTML = '';
+            CATEGORIAS.forEach(cat => {
+                container.innerHTML += `
+                <div style="margin-bottom: 30px;">
+                    <h4 style="color: #bbb; border-bottom: 1px solid #444; padding-bottom: 5px;">${cat}</h4>
+                    <div class="add-form">
+                        <input type="text" id="newMember_${cat}" placeholder="Nuevo integrante...">
+                        <button class="btn-primary" onclick="addMember('${cat}')">Agregar</button>
+                    </div>
+                    <div class="member-grid">
+                        ${appData.miembros[cat].map(m => `
+                            <div class="member-item">
+                                <span>${m}</span>
+                                <button class="btn-delete" onclick="removeMember('${cat}', '${m}')">&times;</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            });
+        }
+
+        function addMember(cat) {
+            const val = document.getElementById(`newMember_${cat}`).value.trim();
+            if (val) {
+                appData.miembros[cat].push(val);
+                document.getElementById(`newMember_${cat}`).value = '';
+                saveData(); renderAll();
+            }
+        }
+
+        function removeMember(cat, name) {
+            if (confirm(`¿Eliminar a ${name}?`)) {
+                appData.miembros[cat] = appData.miembros[cat].filter(m => m !== name);
+                saveData(); renderAll();
+            }
+        }
+
+        // --- REGISTRO ---
+        function renderAttendanceForms() {
+            const container = document.getElementById('attendanceFormsContainer');
+            container.innerHTML = '';
+            const currentDate = document.getElementById('dateSelector').value;
+            const currentData = appData.asistencias[currentDate] || {};
+
+            CATEGORIAS.forEach(cat => {
+                if (appData.miembros[cat].length === 0) return;
+                let section = `<div style="margin-bottom: 25px;">
+                <h4 style="background: #333; padding: 5px 10px; border-left: 4px solid var(--accent-color);">${cat}</h4>`;
+
+                appData.miembros[cat].forEach(m => {
+                    const entry = currentData[m] || { estado: '', comentario: '' };
+                    section += `
+                <div class="attendance-row">
+                    <div class="attendance-main">
+                        <div class="member-name">${m}</div>
+                        <div class="attendance-options">
+                            <label class="option-label" style="color: var(--success-color);">
+                                <input type="radio" name="att_${m}" value="P" ${entry.estado === 'P' ? 'checked' : ''} onchange="toggleComment('${m}')"> P
+                            </label>
+                            <label class="option-label" style="color: var(--danger-color);">
+                                <input type="radio" name="att_${m}" value="A" ${entry.estado === 'A' ? 'checked' : ''} onchange="toggleComment('${m}')"> A
+                            </label>
+                            <label class="option-label" style="color: var(--warning-color);">
+                                <input type="radio" name="att_${m}" value="J" ${entry.estado === 'J' ? 'checked' : ''} onchange="toggleComment('${m}')"> Aviso
+                            </label>
+                        </div>
+                    </div>
+                    <div id="comment_box_${m}" class="comment-box ${entry.estado === 'J' ? 'visible' : ''}">
+                        <textarea id="comment_input_${m}" placeholder="Escribe el motivo del aviso...">${entry.comentario || ''}</textarea>
+                    </div>
+                </div>`;
+                });
+                container.innerHTML += section + `</div>`;
+            });
+        }
+
+        function toggleComment(name) {
+            const inputs = document.getElementsByName(`att_${name}`);
+            let val = '';
+            for (let input of inputs) {
+                if (input.checked) {
+                    val = input.value;
+                    break;
+                }
+            }
+            const box = document.getElementById(`comment_box_${name}`);
+            if (val === 'J') box.classList.add('visible');
+            else box.classList.remove('visible');
+        }
+
+        function loadAttendanceForDate() { renderAttendanceForms(); }
+
+        function saveAttendance() {
+            const date = document.getElementById('dateSelector').value;
+            if (!date) return;
+            if (!appData.asistencias[date]) appData.asistencias[date] = {};
+
+            CATEGORIAS.forEach(cat => {
+                appData.miembros[cat].forEach(m => {
+                    const inputs = document.getElementsByName(`att_${m}`);
+                    let checkedValue = null;
+                    for (let input of inputs) {
+                        if (input.checked) {
+                            checkedValue = input.value;
+                            break;
+                        }
+                    }
+
+                    if (checkedValue) {
+                        appData.asistencias[date][m] = {
+                            estado: checkedValue,
+                            comentario: document.getElementById(`comment_input_${m}`).value
+                        };
+                    }
+                });
+            });
+            saveData();
+            showToast("¡Datos guardados correctamente!");
+            renderStats();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        // --- ESTADÍSTICAS ---
+        function renderStats(isForExport = false) {
+            const container = isForExport ? document.createElement('div') : document.getElementById('statsContainer');
+            if (!isForExport) container.innerHTML = '';
+
+            const allDates = Object.keys(appData.asistencias);
+            CATEGORIAS.forEach(cat => {
+                if (appData.miembros[cat].length === 0) return;
+                let table = `<h4>${cat}</h4><table class="stats-table"><thead><tr>
+                <th>Nombre</th><th>Pres.</th><th>Aus.</th><th>Avisos</th><th>Total %</th>
+            </tr></thead><tbody>`;
+
+                appData.miembros[cat].forEach(m => {
+                    let p = 0, a = 0, j = 0;
+                    allDates.forEach(d => {
+                        const e = appData.asistencias[d][m];
+                        if (e) {
+                            if (e.estado === 'P') p++;
+                            else if (e.estado === 'A') a++;
+                            else if (e.estado === 'J') j++;
+                        }
+                    });
+                    const total = p + a + j;
+                    const pct = total > 0 ? Math.round((p / total) * 100) : 0;
+                    table += `<tr>
+                    <td class="${isForExport ? '' : 'clickable-name'}" ${isForExport ? '' : `onclick="openProfile('${m}', '${cat}')"`}>${m}</td>
+                    <td>${p}</td><td>${a}</td><td>${j}</td>
+                    <td style="color:${pct >= 80 ? 'var(--success-color)' : (pct >= 50 ? 'var(--warning-color)' : 'var(--danger-color)')};font-weight:bold">${pct}%</td>
+                </tr>`;
+                });
+                container.innerHTML += table + '</tbody></table>';
+            });
+            return container.innerHTML;
+        }
+
+        // --- MODALES ---
+        function openProfile(name, cat) {
+            currentProfileName = name;
+            document.getElementById('modalName').innerText = name;
+            document.getElementById('modalCategory').innerText = cat;
+            document.getElementById('modalObservations').value = appData.observaciones[name] || "";
+            const hist = document.getElementById('modalHistory'); hist.innerHTML = '';
+            const dates = Object.keys(appData.asistencias).sort().reverse();
+            dates.forEach(d => {
+                const e = appData.asistencias[d][name];
+                if (e && (e.comentario || e.estado)) {
+                    const label = e.estado === 'P' ? 'Presente' : (e.estado === 'A' ? 'Ausente' : 'Aviso');
+                    hist.innerHTML += `<div class="history-item"><span class="history-date">${d}</span><span class="history-status">[${label}]</span><span class="history-comment">${e.comentario ? `"${e.comentario}"` : ''}</span></div>`;
+                }
+            });
+            document.getElementById('profileModal').style.display = 'block';
+        }
+
+        function saveObservationFromModal() {
+            appData.observaciones[currentProfileName] = document.getElementById('modalObservations').value;
+            saveData(); alert("Observación guardada.");
+        }
+
+        function closeModal() { document.getElementById('profileModal').style.display = 'none'; }
+
+        // --- CIERRE DE MES ---
+        function closeMonth() {
+            const now = new Date();
+            const monthYear = `Mes ${now.getMonth() + 1}/${now.getFullYear().toString().slice(-2)}`;
+
+            if (!confirm(`¿Estás seguro de que quieres CERRAR EL MES actual (${monthYear})?\n\nEsto guardará un historial de hoy y generará un reporte externo.`)) return;
+
+            // Foto de las estadísticas actuales
+            const reportContent = renderStats(true); // Generar el HTML de las tablas
+
+            const reportObj = {
+                id: monthYear,
+                fechaCierre: now.toLocaleString(),
+                html: reportContent
+            };
+
+            appData.historicos.unshift(reportObj); // Añadir al principio
+            saveData();
+            renderMonthlyReports();
+
+            // Exportación automática del reporte HTML mensual
+            currentViewingReport = reportObj;
+            downloadCurrentReportHtml();
+
+            alert("Mes cerrado correctamente y guardado en la pestaña 'Meses'. El registro principal sigue igual.");
+        }
+
+        function renderMonthlyReports() {
+            const container = document.getElementById('monthlyReportsContainer');
+            container.innerHTML = appData.historicos.length === 0 ? '<p style="color:#666">No hay meses cerrados registrados.</p>' : '';
+
+            appData.historicos.forEach((rep, index) => {
+                container.innerHTML += `
+                <div class="report-item" onclick="openReportView(${index})">
+                    <div class="report-info">
+                        <span class="report-title">🗄️ ${rep.id}</span>
+                        <span class="report-date">Cerrado el: ${rep.fechaCierre}</span>
+                    </div>
+                    <span style="font-size: 1.5em;">➔</span>
+                </div>
+            `;
+            });
+        }
+
+        function openReportView(index) {
+            currentViewingReport = appData.historicos[index];
+            document.getElementById('reportModalTitle').innerText = `Reporte: ${currentViewingReport.id}`;
+            document.getElementById('reportModalContent').innerHTML = currentViewingReport.html;
+            document.getElementById('reportModal').style.display = 'block';
+        }
+
+        function closeReportModal() { document.getElementById('reportModal').style.display = 'none'; }
+
+        function downloadCurrentReportHtml() {
+            if (!currentViewingReport) return;
+
+            const styles = Array.from(document.styleSheets[0].cssRules).map(r => r.cssText).join('\n');
+
+            const fullHtml = `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <title>Reporte Mensual - ${currentViewingReport.id}</title>
+            <style>
+                ${styles}
+                body { background-color: #1a1a1a; padding: 50px; color: #e0e0e0; font-family: sans-serif; }
+                .report-header { text-align: center; border-bottom: 2px solid #d4af37; padding-bottom: 20px; margin-bottom: 30px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="report-header">
+                    <h1 style="color:#d4af37; text-transform:uppercase;">REPORTE MENSUAL DE ASISTENCIAS</h1>
+                    <h2>${currentViewingReport.id}</h2>
+                    <p style="color:#888;">Cierre generado el: ${currentViewingReport.fechaCierre}</p>
+                </div>
+                ${currentViewingReport.html}
+                <div style="margin-top: 50px; text-align: center; font-size: 0.8em; color: #555;">Sistema de Asistencia V.Comodoro Eban</div>
+            </div>
+        </body>
+        </html>`;
+
+            const blob = new Blob([fullHtml], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Reporte_Asistencia_${currentViewingReport.id.replace(/ /g, '_').replace(/\//g, '-')}.html`;
+            a.click();
+        }
+
+        // --- SISTEMA ---
+        function exportData() {
+            const blob = new Blob([JSON.stringify(appData)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `asistencias_FULL_BACKUP_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+        }
+
+        function importData(input) {
+            const file = input.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try { appData = JSON.parse(e.target.result); saveData(); renderAll(); alert("Importado con éxito."); }
+                catch (err) { alert("Archivo no válido"); }
+            };
+            reader.readAsText(file);
+        }
+
+        function resetApp() {
+            if (confirm("¿Estás seguro de que quieres resetear TODO el sistema?\n\nSe borrarán todos los miembros, asistencias, observaciones e historial permanentemente.")) {
+                localStorage.removeItem('asistencias_eban_v2');
+                localStorage.removeItem('asistencias_eban_v1');
+                location.reload();
+            }
+        }
+
+        window.onclick = function (event) {
+            if (event.target == document.getElementById('profileModal')) closeModal();
+            if (event.target == document.getElementById('reportModal')) closeReportModal();
+        }
+    </script>
+</body>
+
+</html>
