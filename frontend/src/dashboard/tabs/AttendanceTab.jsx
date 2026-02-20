@@ -27,7 +27,7 @@ export default function AttendanceTab({
     };
 
 
-    const currentData = dashboardData.asistencias[currentDate] || {};
+    const currentData = {} // Provisional, luego se llenará con los datos del evento seleccionado 
 
     return (
         <>
@@ -47,10 +47,9 @@ export default function AttendanceTab({
             <div id="attendanceFormsContainer">
                 {/* Se llenará dinámicamente */}
 
-                {dashboardData.CATEGORIAS.map(cat => {
-                  const listaMemberInCat = dashboardData.miembros[cat] || [];
+                {dashboardData?.ranks?.map(cat => {
+                  const listaMemberInCat = dashboardData.membersByRank[cat] || [];
                   if (listaMemberInCat.length === 0) return null;
-                                
                   return (
                     <div key={cat} style={{ marginBottom: 25 }}>
                       <h4 style={{ background: "#333", padding: "5px 10px", borderLeft: "4px solid var(--accent-color)" }}>
@@ -58,20 +57,20 @@ export default function AttendanceTab({
                       </h4>
                 
                       {listaMemberInCat.map(m => {
-                        const entry = currentData[m] || { estado: "", comentario: "" };
-                        const visible = commentsVisible[m] ?? entry.estado === "J";
+                        const entry = currentData[m.nickname] || { estado: "", comentario: "" };
+                        const visible = commentsVisible[m.nickname] ?? entry.estado === "J";
                     
                         return (
-                          <div className="attendance-row" key={m}>
+                          <div className="attendance-row" key={m.nickname}>
                             <div className="attendance-main">
-                              <div className="member-name">{m}</div>
+                              <div className="member-name">{m.nickname}</div>
                         
                               <div className="attendance-options">
                                 {["P", "A", "J"].map(val => (
                                   <label key={val} className="option-label">
                                     <input
                                       type="radio"
-                                      name={`att_${m}`}
+                                      name={`att_${m.nickname}`}
                                       value={val}
                                       checked={entry.estado === val}
                                       onChange={() => toggleComment(m, val)}
