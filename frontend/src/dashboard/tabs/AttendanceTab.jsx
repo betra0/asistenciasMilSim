@@ -1,5 +1,5 @@
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDashboardData } from '../../context/DataContext';
 
 export default function AttendanceTab({
@@ -7,6 +7,8 @@ export default function AttendanceTab({
 }) {
 
   const [commentsVisible, setCommentsVisible] = useState({});   
+  const [AllSelector, setAllSelector] = useState("A"); // "P", "A", "C"
+  const { dashboardData, isLoading, error } = useDashboardData();
   
   const [currentEvent, setCurrentEvent] = useState(
     {
@@ -21,6 +23,29 @@ export default function AttendanceTab({
   
     );
 
+
+  // useefect vacio 
+  useEffect(() => {
+
+    const func = () => {
+      const estado = AllSelector
+      let attendance = currentEvent.attendance;
+      dashboardData?.members?.forEach(m => {
+        attendance[m.nickname] = {
+          estado,
+          comentario: attendance[m.nickname]?.comentario || ""
+        };
+      });
+      setCurrentEvent(prev => ({
+        ...prev,
+        attendance
+      }));
+    }; 
+    func();
+
+  }, [AllSelector, dashboardData]);
+
+  
   const toggleMemberAttendance = (member, estado) => {
     // Si el estado es "J", mostrar el textarea de comentarios, sino ocultarlo
     setCommentsVisible(prev => ({
@@ -60,7 +85,6 @@ export default function AttendanceTab({
   const saveAttendance = () => {
       // pass
   };
-  const { dashboardData, isLoading, error } = useDashboardData();
 
 
   return (
@@ -90,6 +114,26 @@ export default function AttendanceTab({
                     onChange={e => setCurrentEvent(prev => ({ ...prev, name: e.target.value }))}
                 />
 
+            </div>
+            {/* All selector */}
+            <div className="attendance-row" >
+              <div className="attendance-main">
+                <div className="member-name"></div>
+          
+                <div className="attendance-options">
+                  {["P", "A", "C"].map(val => (
+                    <label key={val} className="option-label">
+                      <input
+                        type="radio"
+                        name={`allSelector_${val}`}
+                        checked={AllSelector === val}
+                        onChange={() => setAllSelector(val)}
+                      />
+                      {val === "C" ? "Clear" : val}
+                    </label>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div id="attendanceFormsContainer">
