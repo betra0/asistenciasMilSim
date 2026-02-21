@@ -1,39 +1,77 @@
 
 import { useState } from 'react'
+import { useDashboardData } from '../../context/DataContext';
 
 export default function AttendanceTab({
-    dashboardData,
-    setDashboardData
+
 }) {
 
   const [commentsVisible, setCommentsVisible] = useState({});   
-  const [currentDate, setCurrentDate] = useState(Date.now());
+  
+  const [currentEvent, setCurrentEvent] = useState(
+    {
+      isNew: true,
+      date: Date.now(),
+      attendance: {}, // "NOMBRE": { estado: 'P', comentario: '' }
+      internalId: null, // solo para eventos existentes, no para nuevos
+      name: "nuevo_evento" ,
+      description: ""
+    
+    }
+  
+    );
 
-    const toggleComment = (member, estado) => {
+  const toggleMemberAttendance = (member, estado) => {
+    // Si el estado es "J", mostrar el textarea de comentarios, sino ocultarlo
     setCommentsVisible(prev => ({
       ...prev,
-      [member]: estado === "J"
+      [member.nickname]: estado === "J"
     }));
 
-    onChange(member, estado);
+    // Actualizar el estado de asistencia del miembro
+    setCurrentEvent(prev => ({
+      ...prev,
+      attendance: {
+        ...prev.attendance,
+        [member.nickname]: {
+          ...prev.attendance[member.nickname],
+          estado
+        }
+      }
+    }));
   };
 
-    const loadAttendanceForDate = (e) => {
-        // pass
-    };
+  const textInputHandler = (member, estado, comentario) => {
+    setCurrentEvent(prev => ({
+      ...prev,
+      attendance: {
+        ...prev.attendance,
+        [member.nickname]: {
+          estado,
+          comentario
+        }
+      }
+    }));
+  }
 
-    const saveAttendance = () => {
-        // pass
-    };
+  const loadAttendanceForDate = (e) => {
+      // pass
+  };
+  const saveAttendance = () => {
+      // pass
+  };
+  const { dashboardData, isLoading, error } = useDashboardData();
 
 
-    const currentData = {} // Provisional, luego se llenará con los datos del evento seleccionado 
-
-    return (
-        <>
+  return (
+    <>
         {/* TAB: REGISTRO DIARIO */}
     <div id="registro" className="tab-content active">
         <div className="section-card">
+          <div className="date-container">
+                <label>Crear nueva asistencia</label>
+
+            </div>
             <div className="date-container">
                 <label>📅 FECHA DE ENTRENAMIENTO:</label>
                 <input
@@ -42,6 +80,16 @@ export default function AttendanceTab({
                     onChange={loadAttendanceForDate}
                     style={{ maxWidth: "250px" }}
                 />
+            </div>
+            <div className="date-container">
+                <label>Nombre del evento</label>
+                <input
+                    type="text"
+                    id="eventName"
+                    value={currentEvent.name}
+                    onChange={e => setCurrentEvent(prev => ({ ...prev, name: e.target.value }))}
+                />
+
             </div>
 
             <div id="attendanceFormsContainer">
@@ -57,7 +105,7 @@ export default function AttendanceTab({
                       </h4>
                 
                       {listaMemberInCat.map(m => {
-                        const entry = currentData[m.nickname] || { estado: "", comentario: "" };
+                        const entry = currentEvent.attendance[m.nickname] || { estado: "", comentario: "" };
                         const visible = commentsVisible[m.nickname] ?? entry.estado === "J";
                     
                         return (
@@ -73,7 +121,7 @@ export default function AttendanceTab({
                                       name={`att_${m.nickname}`}
                                       value={val}
                                       checked={entry.estado === val}
-                                      onChange={() => toggleComment(m, val)}
+                                      onChange={() => toggleMemberAttendance(m, val)}
                                     />
                                     {val === "J" ? "Aviso" : val}
                                   </label>
@@ -85,7 +133,7 @@ export default function AttendanceTab({
                               <div className="comment-box visible">
                                 <textarea
                                   value={entry.comentario || ""}
-                                  onChange={e => onChange(m, entry.estado, e.target.value)}
+                                  onChange={e => textInputHandler(m, entry.estado, e.target.value)}
                                   placeholder="Escribe el motivo del aviso..."
                                 />
                               </div>

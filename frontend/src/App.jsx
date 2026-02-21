@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import './App.css'
 import DashboardPage from './dashboard/DashboardPage';
+import { DataProvider } from './context/DataContext';
 
 
 // NOTA: MIGRANDO DESDE CODIGO LEGACY A REACT
@@ -376,18 +377,24 @@ function App() {
 
   return (
     <>
-<div className="container">
-    <header>
-        <h1>Control de Asistencias</h1>
-        <p style={{ color: "#888" }}>Gestión de Personal - V.Comodoro Eban</p>
-        <img src="d1.png" alt="Logo Unidad" className="header-logo" />
-    </header>
+        <div className="container">
+            <header>
+                <h1>Control de Asistencias</h1>
+                <p style={{ color: "#888" }}>Gestión de Personal - V.Comodoro Eban</p>
+                <img src="d1.png" alt="Logo Unidad" className="header-logo" />
+            </header>
+            
+            <DataProvider> 
 
-    <DashboardPage />
+                <DashboardPage />
+
+            </DataProvider>
+
+            
 
 
-    
-</div>
+
+        </div>
 
 
     </>

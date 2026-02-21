@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import AttendanceTab from './tabs/AttendanceTab';
+import { useDashboardData } from '../context/DataContext';
 
 
 export default function DashboardPage() {
@@ -20,50 +21,9 @@ export default function DashboardPage() {
     //};
 
     const [activeTab, setActiveTab] = useState('registro');
-    const [dashboardData, setDashboardData] = useState(null);
-    const [isLoding, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const { dashboardData, setDashboardData } = useDashboardData();
 
 
-    const formatData= (newData) => {
-        const data = {
-            ranks: newData.ranks ? newData.ranks : [],  // ['Oficiales', 'Cadetes', 'Aspirantes', 'Reclutas']
-            members: newData.members ? newData.members : [], // [{ name: 'Pegaso', rank: 'Oficiales' }, ...]
-            membersByRank: newData.membersForRank ? newData.membersForRank : {}, // { 'Oficiales': [{name: 'Pegaso', ...}], 'Cadetes': [...], ... }
-            attendances: newData.attendances ? newData.attendances : {}, // idEvento: { memberName: { estado: 'P', comentario: '...' }, ... }
-            events: newData.events ? newData.events : [] // [{ id: 'idEvento', date: "2025-01-01T03:00:00.000Z", name: 'Evento 1' }, ...]
-
-        };
-        console.log("data formateada:", data);  
-        return data;
-    }
-
-    useEffect(() => {
-      const fetchData = async () => {
-        console.log("hola  ");
-        try {
-            const res = await fetch("http://127.0.0.1:3000/app/bootstrap");
-        
-          if (!res.ok) {
-            throw new Error("Error en la petición");
-          }
-
-        
-          const data = await res.json();
-          console.log("data recibida:", data);
-        
-          // setState aquí
-          // setAppData(data);
-          const formattedData = formatData(data);
-            setDashboardData(formattedData);
-        
-        } catch (err) {
-          console.error(err);
-        }
-    };
-
-  fetchData();
-}, []);
 
     return (
     <>
@@ -76,7 +36,7 @@ export default function DashboardPage() {
         </div>
 
 
-        {activeTab === 'registro' && <AttendanceTab dashboardData={dashboardData} setDashboardData={setDashboardData}/>}
+        {activeTab === 'registro' && <AttendanceTab />}
     </>
     );
 } 
