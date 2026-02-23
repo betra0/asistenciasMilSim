@@ -11,10 +11,26 @@ export function DataProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-	
+	const loadAttendancebyId = async (eventId) => {
+    try {
+      const res = await fetch(`http://127.0.0.1:3000/events/${eventId}/attendance`)
+      if (!res.ok) {
+        throw new Error("Error fetching attendance data");
+      }
+      const body = await res.json();
+      console.log('NOWbody recibido de api', body);
+      const newData = formatAttendanceInData(data, body.data, eventId);
+      console.log("New data with attendance loaded:", newData);
+      setData(newData);
+      return newData.attendances[eventId];
+      
+    } catch (err) {
+      console.error("Error loading attendance:", err);
+      throw err;
+    }
+  };
 
-
-  const saveAttendance = async (eventData) => {
+  const saveNewEventAndAttendace = async (eventData) => {
     try {
       const res = await fetch("http://127.0.0.1:3000/events", {
         method: "POST",
@@ -47,7 +63,8 @@ export function DataProvider({ children }) {
     setIsLoading,
     error,
     setError,
-    saveAttendance
+    loadAttendancebyId,
+    saveNewEventAndAttendace,
   };
   useEffect(() => {
     const fetchData = async () => {
@@ -106,4 +123,14 @@ const formatData= (newData) => {
         events: newData.events ? newData.events : [] // [{ id: 'idEvento', date: "2025-01-01T03:00:00.000Z", name: 'Evento 1' }, ...]
     };
 	return data;
+}
+
+function formatAttendanceInData(data, newAttendance, eventId) {
+  return {
+    ...data,
+    attendances: {
+      ...data.attendances,
+      [eventId]: newAttendance
+    }
+  };
 }

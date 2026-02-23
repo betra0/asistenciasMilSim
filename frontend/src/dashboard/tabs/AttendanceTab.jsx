@@ -2,16 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useDashboardData } from '../../context/DataContext';
 
-export default function AttendanceTab({
-
-}) {
-
-  const [commentsVisible, setCommentsVisible] = useState({});   
-  const [AllSelector, setAllSelector] = useState("A"); // "P", "A", "C"
-  const { dashboardData, isLoading, error, saveAttendance } = useDashboardData();
-  
-  const [currentEvent, setCurrentEvent] = useState(
-    {
+const newDefEvent ={
       isNew: true,
       date: new Date().toISOString().split("T")[0], // formato YYYY-MM-DD
       attendance: {}, // "member_id": { estado: 'P', comentario: '' }
@@ -20,8 +11,19 @@ export default function AttendanceTab({
       description: ""
     
     }
+
+export default function AttendanceTab({
+
+
+}) {
+
+  const [commentsVisible, setCommentsVisible] = useState({});   
+  const [AllSelector, setAllSelector] = useState("A"); // "P", "A", "C"
+  const { dashboardData, isLoading, error, saveNewEventAndAttendace, loadAttendancebyId } = useDashboardData();
   
-    );
+  const [currentEvent, setCurrentEvent] = useState(newDefEvent);
+    
+  
 
 
   // useefect vacio 
@@ -35,6 +37,7 @@ export default function AttendanceTab({
   useEffect(() => {
 
     const func = () => {
+      if (!currentEvent.isNew) return; // solo aplica a eventos nuevos, no a los existentes(sino causa un bug muy raro)
       const estado = AllSelector
       let attendance = currentEvent.attendance;
       dashboardData?.members?.forEach(m => {
@@ -96,11 +99,36 @@ export default function AttendanceTab({
   };
   const saveAttendanceHandler = async () => {
       // pass
-      await saveAttendance(currentEvent);
+      if (!currentEvent.isNew) {
+        alert("Solo se pueden guardar nuevos eventos, la funcionalidad de edición de eventos existentes aún no está implementada.");
+        return;
+      }
+      await saveNewEventAndAttendace(currentEvent);
       console.log("se a ejecutyado la funcion de guardado");
 
 
   };
+  const setCurrentEventHandler = async (eventId) => {
+    if (eventId === "new") {
+      setCurrentEvent(newDefEvent);
+      return;
+    }
+    console.log("Selected event ID:", eventId);
+    let attendance = dashboardData.attendances[eventId] || null;
+    console.log("en func, log", attendance);
+    if (attendance===null) {
+      attendance = await loadAttendancebyId(eventId);
+    }
+    console.log("sigo en func pero en final:", attendance);
+    setCurrentEvent({
+      isNew: false,
+      date: dashboardData.events.find(ev => ev.id === parseInt(eventId))?.event_date.split("T")[0] || new Date().toISOString().split("T")[0],
+      attendance: attendance || {},
+      internalId: eventId,
+      name: dashboardData.events.find(ev => ev.id === parseInt(eventId))?.name || "evento_desconocido",
+      description: dashboardData.events.find(ev => ev.id === parseInt(eventId))?.description || ""
+    });
+  }
 
 
   return (
@@ -109,31 +137,48 @@ export default function AttendanceTab({
     <div id="registro" className="tab-content active">
         <div className="section-card">
           <div className="date-container">
-                <label>Crear nueva asistencia</label>
+                <label>Crear nuevo evento o editar uno existente</label>
+                <select
+                  style={{ width: 200, background: "#271a1a", color: "#fff", border: "1px solid #555" }}
+                  onChange={(e) => setCurrentEventHandler(e.target.value)}
+                >
+                  {dashboardData?.events?.map(ev => (
+                    <option key={'options'+ev.id} value={ev.id}>
+                      {ev.name} - {ev.event_date.split("T")[0]}
+                    </option>
+                  ))}
+                
+                  <option value="new">Nuevo Evento</option>
+                </select>
 
             </div>
             <div className="date-container">
-                <label>📅 FECHA DE ENTRENAMIENTO:</label>
+                <label>📅 Fecha del Evento:</label>
                 <input
                     type="date"
                     id="dateSelector"
                     onChange={loadAttendanceForDate}
                     value={currentEvent.date}
                     style={{ maxWidth: "250px" }}
+                    readOnly={!currentEvent.isNew} // solo editable para nuevos eventos
                 />
             </div>
             <div className="date-container">
-                <label>Nombre del evento</label>
+                <label>Nombre Del Evento:</label>
                 <input
                     type="text"
                     id="eventName"
                     value={currentEvent.name}
                     onChange={e => setCurrentEvent(prev => ({ ...prev, name: e.target.value }))}
+                    style={{maxWidth:"350px"}}
+                    readOnly={!currentEvent.isNew} // solo editable para nuevos eventos
                 />
 
             </div>
             {/* All selector */}
-            <div className="attendance-row" >
+            {
+              currentEvent.isNew && (
+                            <div className="attendance-row" >
               <div className="attendance-main">
                 <div className="member-name"></div>
           
@@ -152,6 +197,8 @@ export default function AttendanceTab({
                 </div>
               </div>
             </div>
+              )
+            }
 
             <div id="attendanceFormsContainer">
                 {/* Se llenará dinámicamente */}
