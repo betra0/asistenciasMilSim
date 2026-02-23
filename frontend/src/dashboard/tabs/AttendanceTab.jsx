@@ -8,13 +8,13 @@ export default function AttendanceTab({
 
   const [commentsVisible, setCommentsVisible] = useState({});   
   const [AllSelector, setAllSelector] = useState("A"); // "P", "A", "C"
-  const { dashboardData, isLoading, error } = useDashboardData();
+  const { dashboardData, isLoading, error, saveAttendance } = useDashboardData();
   
   const [currentEvent, setCurrentEvent] = useState(
     {
       isNew: true,
-      date: Date.now(),
-      attendance: {}, // "NOMBRE": { estado: 'P', comentario: '' }
+      date: new Date().toISOString().split("T")[0], // formato YYYY-MM-DD
+      attendance: {}, // "member_id": { estado: 'P', comentario: '' }
       internalId: null, // solo para eventos existentes, no para nuevos
       name: "nuevo_evento" ,
       description: ""
@@ -27,13 +27,20 @@ export default function AttendanceTab({
   // useefect vacio 
   useEffect(() => {
 
+    console.log("curren event changed:", currentEvent);
+
+
+  }, [currentEvent]);
+
+  useEffect(() => {
+
     const func = () => {
       const estado = AllSelector
       let attendance = currentEvent.attendance;
       dashboardData?.members?.forEach(m => {
-        attendance[m.nickname] = {
+        attendance[m.id] = {
           estado,
-          comentario: attendance[m.nickname]?.comentario || ""
+          comentario: attendance[m.id]?.comentario || ""
         };
       });
       setCurrentEvent(prev => ({
@@ -50,7 +57,7 @@ export default function AttendanceTab({
     // Si el estado es "J", mostrar el textarea de comentarios, sino ocultarlo
     setCommentsVisible(prev => ({
       ...prev,
-      [member.nickname]: estado === "J"
+      [member.id]: estado === "J"
     }));
 
     // Actualizar el estado de asistencia del miembro
@@ -58,8 +65,8 @@ export default function AttendanceTab({
       ...prev,
       attendance: {
         ...prev.attendance,
-        [member.nickname]: {
-          ...prev.attendance[member.nickname],
+        [member.id]: {
+          ...prev.attendance[member.id],
           estado
         }
       }
@@ -71,7 +78,7 @@ export default function AttendanceTab({
       ...prev,
       attendance: {
         ...prev.attendance,
-        [member.nickname]: {
+        [member.id]: {
           estado,
           comentario
         }
@@ -80,10 +87,19 @@ export default function AttendanceTab({
   }
 
   const loadAttendanceForDate = (e) => {
-      // pass
+    const selectedDate = e.target.value;
+    setCurrentEvent(prev => ({
+      ...prev,
+      date: selectedDate
+    }));
+
   };
-  const saveAttendance = () => {
+  const saveAttendanceHandler = async () => {
       // pass
+      await saveAttendance(currentEvent);
+      console.log("se a ejecutyado la funcion de guardado");
+
+
   };
 
 
@@ -102,6 +118,7 @@ export default function AttendanceTab({
                     type="date"
                     id="dateSelector"
                     onChange={loadAttendanceForDate}
+                    value={currentEvent.date}
                     style={{ maxWidth: "250px" }}
                 />
             </div>
@@ -149,11 +166,11 @@ export default function AttendanceTab({
                       </h4>
                 
                       {listaMemberInCat.map(m => {
-                        const entry = currentEvent.attendance[m.nickname] || { estado: "", comentario: "" };
-                        const visible = commentsVisible[m.nickname] ?? entry.estado === "J";
+                        const entry = currentEvent.attendance[m.id] || { estado: "", comentario: "" };
+                        const visible = commentsVisible[m.id] ?? entry.estado === "J";
                     
                         return (
-                          <div className="attendance-row" key={m.nickname}>
+                          <div className="attendance-row" key={m.id}>
                             <div className="attendance-main">
                               <div className="member-name">{m.nickname}</div>
                         
@@ -162,7 +179,7 @@ export default function AttendanceTab({
                                   <label key={val} className="option-label">
                                     <input
                                       type="radio"
-                                      name={`att_${m.nickname}`}
+                                      name={`att_${m.id}`}
                                       value={val}
                                       checked={entry.estado === val}
                                       onChange={() => toggleMemberAttendance(m, val)}
@@ -192,7 +209,7 @@ export default function AttendanceTab({
             </div>
 
             <div style={{ marginTop: "20px", textAlign: "right" }}>
-                <button className="btn-primary" onClick={saveAttendance}>
+                <button className="btn-primary" onClick={saveAttendanceHandler}>
                     Guardar Registro del Día
                 </button>
             </div>

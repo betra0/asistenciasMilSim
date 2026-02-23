@@ -12,16 +12,43 @@ export function DataProvider({ children }) {
   const [error, setError] = useState(null);
 
 	
+
+
+  const saveAttendance = async (eventData) => {
+    try {
+      const res = await fetch("http://127.0.0.1:3000/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(eventData)
+
+      });
+
+      if (!res.ok) {
+        throw new Error("Error en la petición", await res.text());
+      }
+      
+      const result = await res.json();
+      console.log("Evento guardado:", result);
+
+    }catch (err) {
+      console.error("Error saving attendance:", err);
+    }
+
+  }
+
+
+
   const value = {
     dashboardData: data,
     setDashboardData: setData,
     isLoading,
     setIsLoading,
     error,
-    setError
+    setError,
+    saveAttendance
   };
-
-
   useEffect(() => {
     const fetchData = async () => {
       console.log("hola  ");
@@ -75,7 +102,7 @@ const formatData= (newData) => {
         ranks: newData.ranks ? newData.ranks : [],  // ['Oficiales', 'Cadetes', 'Aspirantes', 'Reclutas']
         members: newData.members ? newData.members : [], // [{ name: 'Pegaso', rank: 'Oficiales' }, ...]
         membersByRank: newData.membersForRank ? newData.membersForRank : {}, // { 'Oficiales': [{name: 'Pegaso', ...}], 'Cadetes': [...], ... }
-        attendances: newData.attendances ? newData.attendances : {}, // idEvento: { memberName: { estado: 'P', comentario: '...' }, ... }
+        attendances: newData.attendances ? newData.attendances : {}, // idEvento: { member_id: { estado: 'P', comentario: '...' }, ... }
         events: newData.events ? newData.events : [] // [{ id: 'idEvento', date: "2025-01-01T03:00:00.000Z", name: 'Evento 1' }, ...]
     };
 	return data;
