@@ -1,4 +1,4 @@
-import { newEvent } from "../services/events.service.js";
+import { getAttendanceByEventId, newEvent } from "../services/events.service.js";
 
 
 
@@ -31,4 +31,21 @@ export async function raizPost(req, res) {
     console.error(err);
     res.status(500).json({ ok: false, error: "internal error" });
   }
+}
+
+export async function getAttendance(req, res) {
+  try {
+    // pass
+    const { eventId } = req.params;
+    if (!eventId) {
+      return res.status(400).json({ ok: false, error: "Falta el ID del evento" });
+    }
+    const data = await getAttendanceByEventId(eventId);
+    console.log("Attendance data to return:", data);
+    res.json({ ok: true, data: data });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false, error: "internal error" });
+  }
+
 }

@@ -9,7 +9,7 @@ export async function newEvent(eventData) {
         "attendance": {
             "1": { "estado": "P", "comentario": "" },
             "2": { "estado": "A", "comentario": "" },
-            "3": { "estado": "J", "comentario": "Tenia hora con el medico" }
+            "3": { "estado": "J", "comentario": "justificacion" }
 
         }
     }
@@ -34,9 +34,11 @@ export async function newEvent(eventData) {
             "J": "justified"
         }
         for (const memberId in eventData.attendance) {
-            const { estado, text } = eventData.attendance[memberId];
-            const comentario = estado === "J" ? text : "";
-            const insertAttendanceValues = [eventId, memberId, truvalues[estado], comentario];
+            console.log(eventData.attendance[memberId])
+            const { estado, comentario } = eventData.attendance[memberId];
+            const coment = estado === "J" ? comentario : "";
+            console.log(`Insertando asistencia ${memberId}: estado=${estado}, comentario=${coment}`);
+            const insertAttendanceValues = [eventId, memberId, truvalues[estado], coment];
             await client.query(insertAttendanceText, insertAttendanceValues);
         }
 
@@ -47,6 +49,32 @@ export async function newEvent(eventData) {
     } catch (error) {
         await client.query('ROLLBACK');
         console.error("Error creating event:", error);
+        throw error;
+    } finally {
+        client.release();
+    }
+
+
+}
+
+export async function getAttendanceByEventId(eventId) {
+    const exapleResponse = {
+        "{idUse}": { "estado": "P", "comentario": "" },
+    }
+    const client = await pool.connect();
+    try {
+        const queryText = 'SELECT member_id, status, justification FROM event_attendance WHERE event_id = $1';
+        const res = await client.query(queryText, [eventId]);
+        const attendanceData = {};
+        res.rows.forEach(row => {
+            attendanceData[row.member_id] = {
+                estado: row.status === "present" ? "P" : row.status === "absent" ? "A" : "J",
+                comentario: row.justification || ""
+            };
+        });
+        return attendanceData;
+    } catch (error) {
+        console.error("Error fetching attendance:", error);
         throw error;
     } finally {
         client.release();
