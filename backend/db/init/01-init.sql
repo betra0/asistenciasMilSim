@@ -124,3 +124,18 @@ CREATE TRIGGER trg_stats_update
 AFTER UPDATE ON event_attendance
 FOR EACH ROW
 EXECUTE FUNCTION stats_after_update();
+
+CREATE OR REPLACE FUNCTION create_member_stats()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO events_member_stats (member_id)
+  VALUES (NEW.id);
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_create_member_stats
+AFTER INSERT ON members
+FOR EACH ROW
+EXECUTE FUNCTION create_member_stats();
