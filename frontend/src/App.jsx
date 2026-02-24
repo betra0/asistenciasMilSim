@@ -141,50 +141,9 @@ function App() {
             // quite algo
         }
 
-        function toggleComment(name) {
-            const inputs = document.getElementsByName(`att_${name}`);
-            let val = '';
-            for (let input of inputs) {
-                if (input.checked) {
-                    val = input.value;
-                    break;
-                }
-            }
-            const box = document.getElementById(`comment_box_${name}`);
-            if (val === 'J') box.classList.add('visible');
-            else box.classList.remove('visible');
-        }
 
         function loadAttendanceForDate() { renderAttendanceForms(); }
 
-        function saveAttendance() {
-            const date = document.getElementById('dateSelector').value;
-            if (!date) return;
-            if (!appData.asistencias[date]) appData.asistencias[date] = {};
-
-            CATEGORIAS.forEach(cat => {
-                appData.miembros[cat].forEach(m => {
-                    const inputs = document.getElementsByName(`att_${m}`);
-                    let checkedValue = null;
-                    for (let input of inputs) {
-                        if (input.checked) {
-                            checkedValue = input.value;
-                            break;
-                        }
-                    }
-
-                    if (checkedValue) {
-                        appData.asistencias[date][m] = {
-                            estado: checkedValue,
-                            comentario: document.getElementById(`comment_input_${m}`).value
-                        };
-                    }
-                });
-            });
-            saveData();
-            showToast("¡Datos guardados correctamente!");
-            renderStats();
-        }
 
         function showToast(message) {
             const toast = document.getElementById("toast");
