@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import AttendanceTab from './tabs/AttendanceTab';
 import { useDashboardData } from '../context/DataContext';
+import StatsTab from './tabs/StatsTab';
 
 
 export default function DashboardPage() {
@@ -37,6 +38,9 @@ export default function DashboardPage() {
 
 
         {activeTab === 'registro' && <AttendanceTab />}
+        {activeTab === 'estadisticas' && <StatsTab />}
+        {activeTab === 'meses' && <div id="meses" className="tab-content active"><h2>Meses</h2></div>}
+        {activeTab === 'miembros' && <div id="miembros" className="tab-content active"><h2>Gestionar Miembros</h2></div>}
     </>
     );
 } 
