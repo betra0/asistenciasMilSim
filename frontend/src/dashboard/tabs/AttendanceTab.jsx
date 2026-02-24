@@ -19,19 +19,17 @@ export default function AttendanceTab({
 
   const [commentsVisible, setCommentsVisible] = useState({});   
   const [AllSelector, setAllSelector] = useState("A"); // "P", "A", "C"
-  const { dashboardData, isLoading, error, saveNewEventAndAttendace, loadAttendancebyId } = useDashboardData();
+  const { dashboardData, isLoading, error, saveNewEventAndAttendace, loadAttendancebyId, reloadData } = useDashboardData();
   
   const [currentEvent, setCurrentEvent] = useState(newDefEvent);
+  const [selectCurrentEvent, setSelectCurrentEvent] = useState('new');
     
   
 
 
   // useefect vacio 
   useEffect(() => {
-
     console.log("curren event changed:", currentEvent);
-
-
   }, [currentEvent]);
 
   useEffect(() => {
@@ -98,36 +96,52 @@ export default function AttendanceTab({
 
   };
   const saveAttendanceHandler = async () => {
-      // pass
       if (!currentEvent.isNew) {
         alert("Solo se pueden guardar nuevos eventos, la funcionalidad de edición de eventos existentes aún no está implementada.");
         return;
       }
-      await saveNewEventAndAttendace(currentEvent);
-      console.log("se a ejecutyado la funcion de guardado");
+      const id =await saveNewEventAndAttendace(currentEvent);
+      if (id && id !== "error") {
+        setSelectCurrentEvent(`${id}`);
+      }
+
 
 
   };
+
+  useEffect(() => {
+    const logicselect= async () => {
+      
+      const eventId = selectCurrentEvent;
+      if (eventId === "new") {
+        setCurrentEvent(newDefEvent);
+        return;
+      }
+
+
+      let attendance = dashboardData.attendances[eventId] || null;
+
+      if (attendance===null) {
+        attendance = await loadAttendancebyId(eventId);
+      }
+
+      setCurrentEvent({
+        isNew: false,
+        date: dashboardData.events.find(ev => ev.id === parseInt(eventId))?.event_date.split("T")[0] || new Date().toISOString().split("T")[0],
+        attendance: attendance || {},
+        internalId: eventId,
+        name: dashboardData.events.find(ev => ev.id === parseInt(eventId))?.name || "evento_desconocido",
+        description: dashboardData.events.find(ev => ev.id === parseInt(eventId))?.description || ""
+      });
+    }
+
+    logicselect();
+  }, [selectCurrentEvent]);
+
+  const textSumit = currentEvent.isNew ? "Guardar Nuevo Evento" : "Actualizar Evento Existente";
+
   const setCurrentEventHandler = async (eventId) => {
-    if (eventId === "new") {
-      setCurrentEvent(newDefEvent);
-      return;
-    }
-    console.log("Selected event ID:", eventId);
-    let attendance = dashboardData.attendances[eventId] || null;
-    console.log("en func, log", attendance);
-    if (attendance===null) {
-      attendance = await loadAttendancebyId(eventId);
-    }
-    console.log("sigo en func pero en final:", attendance);
-    setCurrentEvent({
-      isNew: false,
-      date: dashboardData.events.find(ev => ev.id === parseInt(eventId))?.event_date.split("T")[0] || new Date().toISOString().split("T")[0],
-      attendance: attendance || {},
-      internalId: eventId,
-      name: dashboardData.events.find(ev => ev.id === parseInt(eventId))?.name || "evento_desconocido",
-      description: dashboardData.events.find(ev => ev.id === parseInt(eventId))?.description || ""
-    });
+    setSelectCurrentEvent(eventId);
   }
 
 
@@ -139,6 +153,7 @@ export default function AttendanceTab({
           <div className="date-container">
                 <label>Crear nuevo evento o editar uno existente</label>
                 <select
+                  value={selectCurrentEvent}
                   style={{ width: 200, background: "#271a1a", color: "#fff", border: "1px solid #555" }}
                   onChange={(e) => setCurrentEventHandler(e.target.value)}
                 >
@@ -256,8 +271,8 @@ export default function AttendanceTab({
             </div>
 
             <div style={{ marginTop: "20px", textAlign: "right" }}>
-                <button className="btn-primary" onClick={saveAttendanceHandler}>
-                    Guardar Registro del Día
+                <button className="btn-primary" onClick={() => saveAttendanceHandler()}>
+                    {textSumit}
                 </button>
             </div>
         </div>

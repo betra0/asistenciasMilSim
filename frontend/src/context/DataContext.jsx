@@ -18,9 +18,7 @@ export function DataProvider({ children }) {
         throw new Error("Error fetching attendance data");
       }
       const body = await res.json();
-      console.log('NOWbody recibido de api', body);
       const newData = formatAttendanceInData(data, body.data, eventId);
-      console.log("New data with attendance loaded:", newData);
       setData(newData);
       return newData.attendances[eventId];
       
@@ -46,15 +44,39 @@ export function DataProvider({ children }) {
       }
       
       const result = await res.json();
-      console.log("Evento guardado:", result);
+      await reloadData();
+      return result.data.eventId; // Asumiendo que el backend devuelve el ID del nuevo evento
+
 
     }catch (err) {
       console.error("Error saving attendance:", err);
     }
 
   }
-
-
+  const reloadData = async () => {
+    await fetchData();
+  }
+  const fetchData = async () => {
+    console.log("hola mundo");
+    try {
+        const res = await fetch("http://127.0.0.1:3000/app/bootstrap");
+    
+      if (!res.ok) {
+        throw new Error("Error en la petición");
+      }
+  
+      const data = await res.json();
+      console.log("data recibida:", data);
+    
+      // setState aquí
+      // setAppData(data);
+      const formattedData = formatData(data);
+    setData(formattedData);
+    
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const value = {
     dashboardData: data,
@@ -65,30 +87,12 @@ export function DataProvider({ children }) {
     setError,
     loadAttendancebyId,
     saveNewEventAndAttendace,
+    reloadData,
   };
-  useEffect(() => {
-    const fetchData = async () => {
-      console.log("hola  ");
-      try {
-          const res = await fetch("http://127.0.0.1:3000/app/bootstrap");
-      
-        if (!res.ok) {
-          throw new Error("Error en la petición");
-        }
-    
-        const data = await res.json();
-        console.log("data recibida:", data);
-      
-        // setState aquí
-        // setAppData(data);
-        const formattedData = formatData(data);
-      setData(formattedData);
-      
-      } catch (err) {
-        console.error(err);
-      }
-  	};
 
+  
+  useEffect(() => {
+ 
 		  fetchData();
 		}, []);
 
