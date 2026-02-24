@@ -199,7 +199,7 @@ export default function AttendanceTab({
           
                 <div className="attendance-options">
                   {["P", "A", "C"].map(val => (
-                    <label key={val} className="option-label">
+                    <label key={val} className="option-label" style={val === "C" ? { color: "#888" } : (val === 'P' ? { color: "var(--success-color)" } : { color: "var(--danger-color)" })} >
                       <input
                         type="radio"
                         name={`allSelector_${val}`}
@@ -238,7 +238,7 @@ export default function AttendanceTab({
                         
                               <div className="attendance-options">
                                 {["P", "A", "J"].map(val => (
-                                  <label key={val} className="option-label">
+                                  <label key={val} className="option-label" style={val === "J" ? { color: "var(--warning-color)" } : (val === 'P' ? { color: "var(--success-color)" } : { color: "var(--danger-color)" })} >
                                     <input
                                       type="radio"
                                       name={`att_${m.id}`}
