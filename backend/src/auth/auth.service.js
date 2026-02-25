@@ -32,7 +32,7 @@ export async function authenticate(username, password) {
         { expiresIn: "30d" }
     );
 
-  return { token };
+  return { token, id: idUser, username: process.env.ADMIN_USERNAME };
 
 
   }catch (err) {

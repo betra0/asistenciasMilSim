@@ -15,7 +15,7 @@ export async function login(req, res) {
     maxAge: 30 * 24 * 60 * 60 * 1000
   });
 
-  res.json({ ok: true });
+  res.json({ ok: true, user: { id: ok.id, username: ok.username } });
 }
 
 export function logout(req, res) {
