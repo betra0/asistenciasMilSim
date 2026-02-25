@@ -1,3 +1,19 @@
+CREATE Table roles (
+    id SERIAL PRIMARY KEY,
+    role_name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    roleid INTEGER,
+    FOREIGN KEY (roleid)
+        REFERENCES roles(id)
+        ON DELETE SET NULL
+);
+
+
 CREATE TABLE ranks(
     id SERIAL PRIMARY KEY,
     rank_name TEXT NOT NULL
