@@ -3,16 +3,18 @@ import { useState } from 'react'
 import './App.css'
 import DashboardPage from './dashboard/DashboardPage';
 import { DataProvider } from './context/DataContext';
+import { useUser } from './context/UserContext';
+import AuthForm from './auth/AuthForm';
 
 
 // NOTA: MIGRANDO DESDE CODIGO LEGACY A REACT
 
 function App() {
-  const [count, setCount] = useState(0)
+    const { user, isLoading, error } = useUser();
 
   
 
-
+    // codigo legacy, no está activo, solo de referencia para migrar a react. Se puede eliminar después de migrar todo a react sin problemas.
         const CATEGORIAS = ['Oficiales', 'Cadetes', 'Aspirantes', 'Reclutas'];
         const DEFAULT_MEMBERS = {
             'Oficiales': ['[GRL.D] Pegaso', '[V. Comodoro] Eban', '[T.Coronel] Lucho', '[MY] Venom', '[MY] Gonxol'],
@@ -27,7 +29,7 @@ function App() {
             observaciones: {}, // "NOMBRE": "texto"
             historicos: [] // Array de { id: 'Mes 2/26', fechaCierre: '...', html: '...' }
         };
-    const [data, setData] = useState(appData);
+
 
     
         let currentProfileName = "";
@@ -335,19 +337,18 @@ function App() {
         }
 
   return (
-    <>
+    <>  {isLoading? <div className='loading text-xl'>Cargando...</div>: error?<div className='error'>Error: {error.message}</div>:''}
         <div className="container">
             <header>
                 <h1>Control de Asistencias</h1>
                 <p style={{ color: "#888" }}>Gestión de Personal - V.Comodoro Eban</p>
                 <img src="d1.png" alt="Logo Unidad" className="header-logo" />
             </header>
+            {
+                !user ? <AuthForm />:<DataProvider> <DashboardPage /></DataProvider>
+            }
             
-            <DataProvider> 
 
-                <DashboardPage />
-
-            </DataProvider>
 
             
 
