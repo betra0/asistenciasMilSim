@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:18.2
+    container_name: postgres_db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./backend/db/init:/docker-entrypoint-initdb.d
+
+  api:
+    build: ./backend
+    container_name: app_api
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      NODE_ENV: production
+      PORT: ${PORT}
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_HASH: ${ADMIN_HASH}
+
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: /api
+    container_name: app_frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+
+  proxy:
+    image: nginx:alpine
+    container_name: app_proxy
+    restart: unless-stopped
+    depends_on:
+      - api
+      - frontend
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+
+
+
+volumes:
+  postgres_data:
