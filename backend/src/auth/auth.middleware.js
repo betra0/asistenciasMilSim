@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-dotenv.config({ path: './.env' });
+import { config } from "../config/env.js";
 
 export function requireAuth(req, res, next) {
 
@@ -9,7 +8,7 @@ export function requireAuth(req, res, next) {
     
     try {
 
-        req.user = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = jwt.verify(token, config.jwtSecret);
         next();
     } catch (err) {
         res.sendStatus(401);

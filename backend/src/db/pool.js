@@ -1,15 +1,13 @@
 import pkg from "pg";
-import dotenv from "dotenv";
+import { config } from "../config/env.js";
 
-dotenv.config({ path: './.env' });
 
 const { Pool } = pkg;
 
 
 
-console.log("DATABASE_URL:", process.env.DATABASE_URL);
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
+  connectionString: config.db.url
 });
 
 export default pool;
