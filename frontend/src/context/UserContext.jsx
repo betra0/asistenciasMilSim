@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { config } from "../config/env";
 
 
 
@@ -20,7 +21,7 @@ export function UserProvider({ children }) {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch("http://127.0.0.1:3000/auth/login", {
+      const res = await fetch(`${config.apiUrl}/auth/login`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -52,7 +53,7 @@ export function UserProvider({ children }) {
 
   const fetchUser = async () => {
     try {
-        const res = await fetch("http://127.0.0.1:3000/auth/me",{
+        const res = await fetch(`${config.apiUrl}/auth/me`,{
           credentials: "include",
         })
       

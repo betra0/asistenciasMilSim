@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { config } from "../config/env";
 
 
 
@@ -13,7 +14,7 @@ export function DataProvider({ children }) {
 
 	const loadAttendancebyId = async (eventId) => {
     try {
-      const res = await fetch(`http://127.0.0.1:3000/events/${eventId}/attendance`)
+      const res = await fetch(`${config.apiUrl}/events/${eventId}/attendance`)
       if (!res.ok) {
         throw new Error("Error fetching attendance data");
       }
@@ -30,7 +31,7 @@ export function DataProvider({ children }) {
 
   const saveNewEventAndAttendace = async (eventData) => {
     try {
-      const res = await fetch("http://127.0.0.1:3000/events", {
+      const res = await fetch(`${config.apiUrl}/events`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -59,7 +60,7 @@ export function DataProvider({ children }) {
   const fetchData = async () => {
     console.log("hola mundo");
     try {
-        const res = await fetch("http://127.0.0.1:3000/app/bootstrap");
+        const res = await fetch(`${config.apiUrl}/app/bootstrap`);
     
       if (!res.ok) {
         throw new Error("Error en la petición");
