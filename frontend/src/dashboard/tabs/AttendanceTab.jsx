@@ -54,8 +54,9 @@ export default function AttendanceTab({
   }, [AllSelector, dashboardData]);
 
   
-  const toggleMemberAttendance = (member, estado) => {
+  const toggleMemberAttendance = (member, estado, comentario) => {
     // Si el estado es "J", mostrar el textarea de comentarios, sino ocultarlo
+
     setCommentsVisible(prev => ({
       ...prev,
       [member.id]: estado === "J"
@@ -67,25 +68,14 @@ export default function AttendanceTab({
       attendance: {
         ...prev.attendance,
         [member.id]: {
-          ...prev.attendance[member.id],
-          estado
+          estado,
+          comentario: comentario || prev.attendance[member.id].comentario
         }
       }
     }));
   };
 
-  const textInputHandler = (member, estado, comentario) => {
-    setCurrentEvent(prev => ({
-      ...prev,
-      attendance: {
-        ...prev.attendance,
-        [member.id]: {
-          estado,
-          comentario
-        }
-      }
-    }));
-  }
+
 
   const loadAttendanceForDate = (e) => {
     const selectedDate = e.target.value;
@@ -244,7 +234,7 @@ export default function AttendanceTab({
                                       name={`att_${m.id}`}
                                       value={val}
                                       checked={entry.estado === val}
-                                      onChange={() => toggleMemberAttendance(m, val)}
+                                      onChange={() => toggleMemberAttendance(m, val, '')}
                                     />
                                     {val === "J" ? "Aviso" : val}
                                   </label>
@@ -256,7 +246,7 @@ export default function AttendanceTab({
                               <div className="comment-box visible">
                                 <textarea
                                   value={entry.comentario || ""}
-                                  onChange={e => textInputHandler(m, entry.estado, e.target.value)}
+                                  onChange={e => toggleMemberAttendance(m, entry.estado, e.target.value)}
                                   placeholder="Escribe el motivo del aviso..."
                                 />
                               </div>
