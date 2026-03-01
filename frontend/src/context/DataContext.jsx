@@ -32,6 +32,7 @@ export function DataProvider({ children }) {
   const saveNewEventAndAttendace = async (eventData) => {
     try {
       const res = await fetch(`${config.apiUrl}/events`, {
+        credentials: "include",
         method: "POST",
         headers: {
           "Content-Type": "application/json"
