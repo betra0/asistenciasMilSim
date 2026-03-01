@@ -8,8 +8,8 @@ export default function AuthForm() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
-    const labelClass = "flex gap-2 h-6 justify-center text-md w-full bg-grey-200 rounded";
-    const inputClass = "border border-gray-300 rounded";
+    const labelClass = "flex gap-2 h-6 justify-center text-md w-full bg-grey-200 rounded justify-start";
+    const inputClass = "border border-gray-300 rounded px-0 flex-1";
 
 
     const handleSubmit = async (e) => {
@@ -36,9 +36,9 @@ export default function AuthForm() {
                 onChange={(e) => setPassword(e.target.value)}
               />
           </label>
-          <button style={{'backgroundColor': 'var(--accent-color)'}} 
+          <button type='submit' style={{'backgroundColor': 'var(--accent-color)'}} 
           className=" hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded" 
-          type="button" 
+          
             onClick={handleSubmit}
           >Iniciar Sesión</button>
         </form>
