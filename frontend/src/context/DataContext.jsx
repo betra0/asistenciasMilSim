@@ -55,6 +55,29 @@ export function DataProvider({ children }) {
     }
 
   }
+
+  const updateEventAndAttendace= async(changes, eventId) => {
+    
+    try {
+      const res = await fetch(`${config.apiUrl}/events/${eventId}`, {
+        credentials: "include",
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(changes)
+
+      });
+      await reloadData()
+      return
+    }catch(e){
+      console.error(e)
+    }
+
+
+
+  }
+
   const reloadData = async () => {
     await fetchData();
   }
@@ -90,6 +113,7 @@ export function DataProvider({ children }) {
     loadAttendancebyId,
     saveNewEventAndAttendace,
     reloadData,
+    updateEventAndAttendace
   };
 
   

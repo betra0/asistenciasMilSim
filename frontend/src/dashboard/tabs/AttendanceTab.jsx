@@ -23,7 +23,7 @@ export default function AttendanceTab({
 
   const [commentsVisible, setCommentsVisible] = useState({});   
   const [AllSelector, setAllSelector] = useState("A"); // "P", "A", "C"
-  const { dashboardData, isLoading, error, saveNewEventAndAttendace, loadAttendancebyId, reloadData } = useDashboardData();
+  const { dashboardData, isLoading, error, saveNewEventAndAttendace, loadAttendancebyId, reloadData, updateEventAndAttendace } = useDashboardData();
   
   const [currentEvent, setCurrentEvent] = useState(newDefEvent);
   const [selectCurrentEvent, setSelectCurrentEvent] = useState('new');
@@ -131,7 +131,8 @@ useEffect(() => {
   const saveAttendanceHandler = async () => {
       if(isBlock) return
       if (!currentEvent.isNew) {
-        alert("Solo se pueden guardar nuevos eventos, la funcionalidad de edición de eventos existentes aún no está implementada.");
+        await updateEventAndAttendace(change, inmutableEvent.internalId)
+        alert("ok, recarga la pagina para ver los cambios(todavia no se implemeta un reload automatico)");
         return;
       }
       const id =await saveNewEventAndAttendace(currentEvent);
