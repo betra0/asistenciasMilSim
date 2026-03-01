@@ -17,6 +17,10 @@ export default function AttendanceTab({
 
 }) {
 
+  const [change, setChange] =useState(null) // cuando hay cambios gurdar los objetos cambiados aqui{}
+  const [inmutableEvent, setInmutableEvent] = useState(null) // cuando el evento ya existe y se quiere editar y comparar con el original
+
+
   const [commentsVisible, setCommentsVisible] = useState({});   
   const [AllSelector, setAllSelector] = useState("A"); // "P", "A", "C"
   const { dashboardData, isLoading, error, saveNewEventAndAttendace, loadAttendancebyId, reloadData } = useDashboardData();
@@ -27,31 +31,37 @@ export default function AttendanceTab({
   
 
 
+
+
+useEffect(() => {
+  if (!AllSelector || !dashboardData?.members) return;
+
+  setCurrentEvent(prev => {
+    if (!prev.isNew) return prev;
+
+    const estado = AllSelector;
+    const attendance = prev.attendance
+
+
+    dashboardData.members.forEach(m => {
+      attendance[m.id] = {
+        estado,
+        comentario: attendance[m.id]?.comentario || ""
+      };
+    });
+    console.log('attendace modf:', structuredClone(attendance))
+    return {
+      ...prev,
+      attendance
+    };
+  });
+
+}, [AllSelector, dashboardData]);
+
   // useefect vacio 
   useEffect(() => {
-    console.log("curren event changed:", currentEvent);
+    console.log("changed:", structuredClone(currentEvent));
   }, [currentEvent]);
-
-  useEffect(() => {
-
-    const func = () => {
-      if (!currentEvent.isNew) return; // solo aplica a eventos nuevos, no a los existentes(sino causa un bug muy raro)
-      const estado = AllSelector
-      let attendance = currentEvent.attendance;
-      dashboardData?.members?.forEach(m => {
-        attendance[m.id] = {
-          estado,
-          comentario: attendance[m.id]?.comentario || ""
-        };
-      });
-      setCurrentEvent(prev => ({
-        ...prev,
-        attendance
-      }));
-    }; 
-    func();
-
-  }, [AllSelector, dashboardData]);
 
   
   const toggleMemberAttendance = (member, estado, comentario) => {
@@ -69,10 +79,43 @@ export default function AttendanceTab({
         ...prev.attendance,
         [member.id]: {
           estado,
-          comentario: comentario || prev.attendance[member.id].comentario
+          comentario: comentario || prev?.attendance[member.id]?.comentario || ''
         }
       }
     }));
+
+    if (!inmutableEvent || currentEvent.isNew) return;
+
+    const original = inmutableEvent.attendance[member.id];
+
+    const isDifferent =
+      original?.estado !== estado ||
+      original?.comentario !== comentario;
+
+    setChange(prev => {
+      const newChanges = { ...prev };
+
+      if (isDifferent) {
+        newChanges.attendance = {
+          ...(prev?.attendance || {}),
+          [member.id]: { estado, comentario }
+        };
+      } else {
+        // eliminar si volvió al estado original
+        if (prev.attendance) {
+          const { [member.id]: _, ...rest } = prev.attendance;
+
+          if (Object.keys(rest).length === 0) {
+            delete newChanges.attendance;
+          } else {
+            newChanges.attendance = rest;
+          }
+        }
+      }
+
+      return newChanges;
+    });
+
   };
 
 
@@ -86,6 +129,7 @@ export default function AttendanceTab({
 
   };
   const saveAttendanceHandler = async () => {
+      if(isBlock) return
       if (!currentEvent.isNew) {
         alert("Solo se pueden guardar nuevos eventos, la funcionalidad de edición de eventos existentes aún no está implementada.");
         return;
@@ -103,10 +147,7 @@ export default function AttendanceTab({
     const logicselect= async () => {
       
       const eventId = selectCurrentEvent;
-      if (eventId === "new") {
-        setCurrentEvent(newDefEvent);
-        return;
-      }
+      if (eventId==='new')return
 
 
       let attendance = dashboardData.attendances[eventId] || null;
@@ -114,25 +155,57 @@ export default function AttendanceTab({
       if (attendance===null) {
         attendance = await loadAttendancebyId(eventId);
       }
+      const event= dashboardData.events.find(ev => ev.id === parseInt(eventId))
 
+      const date = event?.event_date.split("T")[0] || new Date().toISOString().split("T")[0]
+      const name =event?.name || "evento_desconocido"
+      const description = event?.description || ""
+      const cloneAttendace= structuredClone(attendance || {})
       setCurrentEvent({
         isNew: false,
-        date: dashboardData.events.find(ev => ev.id === parseInt(eventId))?.event_date.split("T")[0] || new Date().toISOString().split("T")[0],
-        attendance: attendance || {},
+        date:date ,
+        attendance: structuredClone(cloneAttendace),
         internalId: eventId,
-        name: dashboardData.events.find(ev => ev.id === parseInt(eventId))?.name || "evento_desconocido",
-        description: dashboardData.events.find(ev => ev.id === parseInt(eventId))?.description || ""
+        name: name,
+        description: description
       });
+      setInmutableEvent({
+        date: date,
+        attendance: cloneAttendace,
+        internalId: eventId,
+        name: name,
+
+      })
     }
 
     logicselect();
   }, [selectCurrentEvent]);
 
-  const textSumit = currentEvent.isNew ? "Guardar Nuevo Evento" : "Actualizar Evento Existente";
+  let textSumit = currentEvent.isNew  ? "Guardar Nuevo Evento" : "Actualizar Evento Existente";
 
   const setCurrentEventHandler = async (eventId) => {
     setSelectCurrentEvent(eventId);
+      if (eventId === "new" && !currentEvent?.isNew) {
+        setCurrentEvent(newDefEvent);
+        setInmutableEvent(null)
+      }
   }
+
+  const cancelEditHandler = async ()=>{
+    setCurrentEvent({
+      ...structuredClone(inmutableEvent),
+      isNew:false
+    }) 
+    setChange(null)
+  }
+
+
+  let isBlock=false
+  if (!currentEvent.isNew){
+    isBlock= (!change || Object.keys(change).length === 0) ? true : false
+  }
+    
+
 
 
   return (
@@ -260,8 +333,25 @@ export default function AttendanceTab({
 
             </div>
 
-            <div style={{ marginTop: "20px", textAlign: "right" }}>
-                <button className="btn-primary" onClick={() => saveAttendanceHandler()}>
+            <div className='flex gap-3 justify-end' >
+              {(!isBlock && !currentEvent.isNew )?
+              <button 
+                onClick={cancelEditHandler}
+                className='bg-red-500 text-black rounded px-3 font-bold'>
+                  Cancelar Cambios
+              </button>
+              :''
+              }
+                
+
+                <button className="btn-primary"   
+                style={{
+                  backgroundColor: isBlock
+                    ? "var(--btn-block)"
+                    : "var(--accent-color)",
+                  cursor: isBlock ? "not-allowed" : "pointer",
+                  opacity: isBlock ? 0.6 : 1
+                }} onClick={() => saveAttendanceHandler()}>
                     {textSumit}
                 </button>
             </div>
